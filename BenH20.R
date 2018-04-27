@@ -7,6 +7,8 @@ train <- read_csv("train_RM.csv")
 test <- read_csv("test_RM.csv")
 
 #subm <- read_csv("../input/hawaiiml-data/sample_submission.csv") 
+#get rid of pre-calculated log quantity
+train$log_quantity = NULL
 
 # combine test and train data
 full <- bind_rows(train, test)
@@ -26,9 +28,12 @@ for(v in shouldBeCategorical) {full[[v]] <- as.factor(full[[v]])}
 # log transform target
 full$quantity <- log1p(full$quantity)
 
+
 # split back into train and test, remove id and date column
 train <- full[1:nrow(train),-(1:2)]
 test <- full[-(1:nrow(train)),-(1:2)]
+
+
 
 # Run h2o's AutoML --------------------------------------------------------------
 
@@ -55,4 +60,4 @@ pred <- h2o.predict(aml@leader, test)
 
 subm <- read_csv("submission.csv") 
 subm$quantity <- as.vector(expm1(pred))
-write.csv(subm, "h2o_autoML.csv", row.names=FALSE)
+write.csv(subm, "h2o_autoML_10min.csv", row.names=FALSE)
